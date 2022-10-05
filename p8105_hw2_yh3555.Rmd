@@ -11,8 +11,10 @@ knitr::opts_chunk$set(collapse = TRUE, message = FALSE)
 
 ```{r load_libraries}
 library(tidyverse)
+library(haven)
 library(dplyr)
 library(readxl)
+library(tidyr)
 ```
 
 ## Problem 1
@@ -55,15 +57,44 @@ nyc_trans %>%
 ```
 
 ## Problem 2
+To take a look at the the sheets in the excel file. 
+```{r}
+excel_sheets("./data/Trash Wheel Collection Data.xlsx")
+```
 
 ```{r}
-wheel_data =
-  read_excel("./data/Trash Wheel Collection Data.xlsx")
+wheel_data = read_excel("./data/Trash Wheel Collection Data.xlsx", 
+                        sheet = "Mr. Trash Wheel")
+```
+
+```{r}
+wheel_data
+```
+
+## Problem 3
+Import the data
+```{r}
+pols_month = 
+  read_csv("./data/pols-month.csv")
+```
+Seperate the the columns
+```{r}
+separate(pols_month, col = mon, into = c('year', 'month', 'day'))
+```
+
+Clean up the the data in snp.csv
+```{r}
+snp = 
+  read_csv("./data/snp.csv")
 ```
 
 
 
-
+Clean up the Unemployment data
+```{r}
+Unemp = 
+  read_csv("./data/unemployment.csv")
+```
 
 
 
