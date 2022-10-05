@@ -1,0 +1,71 @@
+---
+title: "p8105_hw2_yh3555"
+author: "Yuchen Hua"
+date: "2022-10-01"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, message = FALSE)
+```
+
+```{r load_libraries}
+library(tidyverse)
+library(dplyr)
+library(readxl)
+```
+
+## Problem 1
+
+Read the dataset and retain the variables. 
+
+```{r}
+nyc_trans =
+  read_csv(
+    "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv", 
+    col_types = cols(Route8 = "c", Route9 = "c", Route10 = "c", Route11 = "c")) %>%
+    janitor::clean_names() %>%
+    select(
+      line, station_name, station_latitude, station_longitude, starts_with("routes"), 
+      entry, exit_only, vending, entrance_type, ada) %>%
+    mutate(entry = ifelse(entry == "YES", TRUE, FALSE))
+```
+
+To find distinct stations. 
+```{r}
+nyc_trans %>%
+  select(station_name, line) %>%
+  distinct
+```
+
+To find ADA-compliant stations.
+```{r}
+nyc_trans %>%
+  filter(ada == TRUE ) %>%
+  select(station_name, line) %>%
+  distinct
+```
+
+To compuate entrance/ exist without vending allowing entrance. 
+```{r}
+nyc_trans %>%
+  filter(vending == "NO") %>%
+  pull(entry) %>%
+  mean
+```
+
+## Problem 2
+
+```{r}
+wheel_data =
+  read_excel("./data/Trash Wheel Collection Data.xlsx")
+```
+
+
+
+
+
+
+
+
+
