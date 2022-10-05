@@ -62,25 +62,62 @@ To take a look at the the sheets in the excel file.
 excel_sheets("./data/Trash Wheel Collection Data.xlsx")
 ```
 
+Manipulate Mr. Trash wheel sheet.  
 ```{r}
-wheel_data = read_excel("./data/Trash Wheel Collection Data.xlsx", 
-                        sheet = "Mr. Trash Wheel")
+mr.trash = read_excel("./data/Trash Wheel Collection Data.xlsx", 
+                        sheet = "Mr. Trash Wheel", 
+                        range = "A2:N549") %>%
+  janitor::clean_names() %>%
+  drop_na(dumpster) %>%
+  mutate(sports_balls = as.integer(round(sports_balls)))
+
+mr.trash
 ```
 
+Manipulate Professor Trash Wheel sheet. 
 ```{r}
-wheel_data
+pro.trash = read_excel("./data/Trash Wheel Collection Data.xlsx", 
+                       sheet = "Professor Trash Wheel",
+                       range = "A2:M96") %>%
+  janitor::clean_names() %>%
+  drop_na(dumpster)
+
+pro.trash
+```
+
+To add variables to both dataset for combination.  
+
+```{r}
+mr.trash = mutate(mr.trash, label = "m.t") %>%
+  mutate( year = as.double(year))
+
+pro.trash = mutate (pro.trash, label = "p.t")
+
+total_trash = full_join(mr.trash, pro.trash)
+
+total_trash
 ```
 
 ## Problem 3
+
+
 Import the data
 ```{r}
 pols_month = 
-  read_csv("./data/pols-month.csv")
+  read_csv("./data/pols-month.csv") %>%
+  janitor::clean_names() %>%
+  separate(col= mon, into =  c('year', 'month', 'day'))%>%
+  mutate( 
+    year = as.integer(year),
+    month = as.integer(month),
+    month = month.abb[month],
+    day = as.integer(day)) %>%
+  mutate(president = ifelse(prez_dem == 1, 'dem', 'gop') )%>%
+  select(-prez_dem, -prez_gop, -day)
+
+pols_month
 ```
-Seperate the the columns
-```{r}
-separate(pols_month, col = mon, into = c('year', 'month', 'day'))
-```
+
 
 Clean up the the data in snp.csv
 ```{r}
