@@ -57,51 +57,78 @@ nyc_trans %>%
 ```
 
 ## Problem 2
+#### Data import and observation
 To take a look at the the sheets in the excel file. 
 ```{r}
+read_excel("./data/Trash Wheel Collection Data.xlsx")
 excel_sheets("./data/Trash Wheel Collection Data.xlsx")
 ```
 
-Manipulate Mr. Trash wheel sheet.  
+#### Data Manipulation
+Manipulate Mr. Trash wheel sheet. range() was used to choose certain region. rename() was used to change the variable names. drop_na() was used to omit rows not including dempster-specific data. Number of sports balls was rounded to nearest integers via as.integer(). 
 ```{r}
 mr.trash = read_excel("./data/Trash Wheel Collection Data.xlsx", 
                         sheet = "Mr. Trash Wheel", 
                         range = "A2:N549") %>%
   janitor::clean_names() %>%
+  rename(weight= weight_tons,
+         volume= volume_cubic_yards,
+         PlasticBottle= plastic_bottles,
+         CigaretteButts= cigarette_butts,
+         GlassBottle= glass_bottles,
+         GroceryBags= grocery_bags,
+         ChipBag= chip_bags,
+         SportsBalls= sports_balls,
+         HomesPowered= homes_powered)%>%
   drop_na(dumpster) %>%
-  mutate(sports_balls = as.integer(round(sports_balls)))
+  mutate(SportsBalls = as.integer(round(SportsBalls)))
 
 mr.trash
 ```
 
-Manipulate Professor Trash Wheel sheet. 
+Manipulate Professor Trash Wheel sheet. range() was used to choose certain region. rename() was used to change the variable names. drop_na() was used to omit rows not including dempster-specific data. 
 ```{r}
 pro.trash = read_excel("./data/Trash Wheel Collection Data.xlsx", 
                        sheet = "Professor Trash Wheel",
                        range = "A2:M96") %>%
   janitor::clean_names() %>%
+  rename(weight= weight_tons,
+         volume= volume_cubic_yards,
+         PlasticBottle= plastic_bottles,
+         CigaretteButts= cigarette_butts,
+         GlassBottle= glass_bottles,
+         GroceryBags= grocery_bags,
+         ChipBag= chip_bags,
+         HomesPowered= homes_powered)%>%
   drop_na(dumpster)
 
 pro.trash
 ```
 
-To add variables to both dataset for combination.  
+To add variables to both dataset for combination. full_join() was used to for the combination. 
 
 ```{r}
-mr.trash = mutate(mr.trash, label = "m.t") %>%
+mr.trash = mutate(mr.trash, name = "m.t") %>%
   mutate( year = as.double(year))
 
-pro.trash = mutate (pro.trash, label = "p.t")
+pro.trash = mutate (pro.trash, name = "p.t")
 
 total_trash = full_join(mr.trash, pro.trash)
 
 total_trash
 ```
 
+#### Data observation
+According to the organized data, the condition of two trash wheel can be observed. There are two trash wheels involved and 641 datasets in total. Name of the trash wheel can be found in the data frame with dates. Weight and volumes of the trash are also recorded with 8 types of trash in total. 
+
+The total weight of trash of Professor Trash Wheel was 190.12 tons. The total number of sports balls collected by Mr.Trash Wheel was 856.
+
+
 ## Problem 3
 
+#### Data manipulation
 
-Import and clean ip data of pols-month.csv. 
+Import and clean data of pols-month.csv. seperate() was used to separate the column mon. as.integer() was used to put the variables into integer variables. month.abb[] was used to transfer month from number into name. mutate() and ifelse() were used to create president variables from gop and dem. select() was used to remove several variables. 
 ```{r}
 pols_month = 
   read_csv("./data/pols-month.csv") %>%
@@ -119,7 +146,7 @@ pols_month
 ```
 
 
-Clean up the the data in snp.csv
+Clean up the the data in snp.csv. seperate() was used to separate the column mon. as.integer() was used to put the variables into integer variables. month.abb[] was used to transfer month from number into name. mutate() and ifelse() were used to transfer the year from xx to 20xx or 19xx. arrange() was used to organize "year" and "month" in leading columns. 
 ```{r}
 snp = 
   read_csv("./data/snp.csv") %>%
@@ -130,7 +157,7 @@ snp =
     month = month.abb[month],
     day = as.integer(day),
     )%>%
-  mutate(year = ifelse( year > 49, year + 1900, year + 2000))%>%
+  mutate(year = ifelse( year > 15, year + 1900, year + 2000))%>%
   arrange(year, month) %>%
   select(year, month, close, -day)
          
@@ -138,21 +165,20 @@ snp
 ```
 
 
-
-Clean up the Unemployment data
+Clean up the Unemployment data. pivot_longer was used to switch the data set from wide to long. The variables were named as "month". The key values were under the name of "unemployment rate". 
 ```{r}
 Unemp = 
   read_csv("./data/unemployment.csv") %>%
-  janitor::clean_names() %>%
-  pivot_longer( jan : dec,
+  pivot_longer(Jan:Dec,
                 names_to = 'month',
                 values_to = "Unemployment rate") %>%
+  janitor::clean_names() %>%
   mutate(year = as.integer(year))
   
 Unemp
 ```
 
-Time to merge snp into pols_month. and merge unemployment into the result. 
+Time to merge snp into pols_month. and merge unemployment into the result. left_join() was used merge these dataset. 
 ```{r}
 pols_snp = 
   left_join(pols_month, snp, by = c("year", "month"))
@@ -166,3 +192,17 @@ total =
 
 total
 ```
+
+#### Data conclusion
+In the dataset "pols_month", the number of governors, senators and representatives, according to their parties, was listed in each month and years, from 1947 to 2015. President's party was also listed. 
+
+In the dataset "snp", closing value of S&P from 1950 to 2015 were contained. The dates were specified into month. 
+
+The dataset "Unemp" contained the percentage of unemployment from 1948 to 2015. The dates were specified into month. 
+
+The merged dataset "total" contaied the  ecenomic condition, goverment conditions and the employment percentage. We can use this data set to compared and analyize if the government constitution may affect the economic condition. 
+
+
+
+
+
