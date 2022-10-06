@@ -101,7 +101,7 @@ total_trash
 ## Problem 3
 
 
-Import the data
+Import and clean ip data of pols-month.csv. 
 ```{r}
 pols_month = 
   read_csv("./data/pols-month.csv") %>%
@@ -122,7 +122,19 @@ pols_month
 Clean up the the data in snp.csv
 ```{r}
 snp = 
-  read_csv("./data/snp.csv")
+  read_csv("./data/snp.csv") %>%
+  separate(col = date, into = c('month', 'day', 'year')) %>%
+  mutate(
+    year = as.integer(year),
+    month = as.integer(month),
+    month = month.abb[month],
+    day = as.integer(day),
+    )%>%
+  mutate(year = ifelse( year > 49, year + 1900, year + 2000))%>%
+  arrange(year, month) %>%
+  select(year, month, close, -day)
+         
+snp
 ```
 
 
@@ -130,10 +142,27 @@ snp =
 Clean up the Unemployment data
 ```{r}
 Unemp = 
-  read_csv("./data/unemployment.csv")
+  read_csv("./data/unemployment.csv") %>%
+  janitor::clean_names() %>%
+  pivot_longer( jan : dec,
+                names_to = 'month',
+                values_to = "Unemployment rate") %>%
+  mutate(year = as.integer(year))
+  
+Unemp
 ```
 
+Time to merge snp into pols_month. and merge unemployment into the result. 
+```{r}
+pols_snp = 
+  left_join(pols_month, snp, by = c("year", "month"))
 
+pols_snp
+```
 
+```{r}
+total = 
+  left_join(pols_snp, Unemp, by = c("year", "month"))
 
-
+total
+```
